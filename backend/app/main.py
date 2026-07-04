@@ -1,10 +1,20 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from app.services.openf1_client import get_session_info, get_driver_telemetry, get_latest_sessions
 from app.services.interpolator import calculate_distance_and_interpolate
+
 app = FastAPI(
     title="F1 Pit Wall Telemetry API",
     description="Backend para análisis y comparación de telemetría de Fórmula 1 usando OpenF1",
     version="1.0.0"
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 @app.get("/")
