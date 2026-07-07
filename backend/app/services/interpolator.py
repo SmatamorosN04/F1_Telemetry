@@ -8,7 +8,13 @@ def calculate_distance_and_interpolate(car_data: List[Dict[str, Any]], step_mete
     processed_points = []
     accumulated_distance = 0.0
 
-    sorted_data = sorted(car_data, key=lambda x: x.get("date", ""))
+    active_car_data = [p for p in car_data if float(p.get("speed",0)) > 0 or int(p.get("rpm",0)) > 0]
+
+    if len(active_car_data) >= 2:
+        sorted_data = sorted(active_car_data, key=lambda x: x.get("date",""))
+    else: 
+        sorted_data = sorted(car_data, key=lambda x: x.get("date",""))
+
 
     for i in range(len(sorted_data)):
         current = sorted_data[i]
@@ -49,7 +55,6 @@ def calculate_distance_and_interpolate(car_data: List[Dict[str, Any]], step_mete
             "brake": float(current.get("brake", 0))
         })
 
-    # --- SÁCAME DEL BUCLE FOR ---
     if not processed_points: 
         return []
 
