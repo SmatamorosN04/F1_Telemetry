@@ -2,6 +2,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from app.services.openf1_client import get_session_info, get_driver_telemetry, get_latest_sessions
 from app.services.interpolator import calculate_distance_and_interpolate
+from app.routers.driver import router as drivers_router
 
 app = FastAPI(
     title="F1 Pit Wall Telemetry API",
@@ -16,6 +17,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.include_router(drivers_router)
+
 
 @app.get("/")
 def read_root():
