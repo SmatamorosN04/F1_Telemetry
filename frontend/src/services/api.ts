@@ -67,6 +67,14 @@ export const api = {
         return response.json();
     },
 
+    getActiveDrivers: async (): Promise<DriversHubResponse> => {
+        const response = await fetch(`${API_BASE_URL}/api/drivers/active`)
+        if (!response.ok){
+            throw new Error(`Error al obtener la parrilla activa: ${response.statusText}`);
+        }
+        return response.json();
+    },
+
     getDriversHub: async (
         page: number = 1,
         pageSize: number = 25

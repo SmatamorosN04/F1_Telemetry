@@ -15,11 +15,16 @@ export default function DriverPage() {
   const [search, setSearch] = useState("")
   const [activeTab, setActiveTab] = useState<"current" | "historical">("current")
 
-  async function loadDriver() {
+  async function loadDriver(tab: "current"| "historical")  {
     setLoading(true)
     setError(null)
     try { 
-      const data = await api.getDriversHub(1, 100)
+    let data;
+      if (tab === "current") {
+        data = await api.getActiveDrivers();
+      } else {
+        data = await api.getDriversHub(1, 100);
+      }
       setDrivers(data?.result?.items || [])
     } catch (e) {
       setError(e instanceof Error ? e.message : "Error desconocido")
@@ -29,8 +34,8 @@ export default function DriverPage() {
   }
 
   useEffect(() => {
-    loadDriver()
-  }, [])
+    loadDriver(activeTab)
+  }, [activeTab])
 
   const filtered = drivers.filter((d) => {
     const matchesSearch = search.trim() === "" ||
@@ -38,7 +43,6 @@ export default function DriverPage() {
       d.tla?.toLowerCase().includes(search.toLowerCase()) ||
       d.country?.name?.toLowerCase().includes(search.toLowerCase());
 
-    // Si el piloto no ha fallecido y tiene un número de carrera, va a la parrilla actual. Si no, a históricos.
     const isCurrentGrid = d.deathDate == null && d.number != null;
     const matchesTab = activeTab === "current" ? isCurrentGrid : !isCurrentGrid;
 

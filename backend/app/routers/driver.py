@@ -4,29 +4,30 @@ from app.services.hyprace_client import fetch_hyprace_drivers_bulk
 router = APIRouter(prefix="/api/drivers", tags=["Drivers"])
 
 @router.get("/hub")
-async def get_drivers_hub(page: int = 1, page_size: int = 25):
- 
-    try:
-        data = await fetch_hyprace_drivers_bulk(total_drivers=100)
-        
-        if not data or "items" not in data:
-            raise HTTPException(status_code=404, detail="La API externa no retornó elementos válidos")
-            
+async def get_drivershub():
+    try: 
+        data = await fetch_hyprace_drivers_bulk(total_drivers=150)
+        return { "status": "success", "source": "hyprace-historical", "result": data}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+
+@router.get("/active")
+async def get_active_drivers():
+    try: 
+        data = await fetch_hyprace_drivers_bulk(total_drivers=150)
+        active_items = [
+            d for d in data.get("items", [])
+            if d.get("deathDate") is None and d.get("number") is not None and d.get("tla") is not None
+        ]
+
         return {
-            "status": "success",
-            "source": "hyprace-v2-bulk",
-            "result": {
-                "items": data["items"],
-                "totalCount": data.get("total", len(data["items"])),
-                "pageNumber": page,
-                "pageSize": page_size
+            "status":"success",
+            "source": "hyprace-active-grid",
+            "result":{
+                "items": active_items,
+                "totalCount": len(active_items)
             }
         }
-        
-    except HTTPException as http_ex:
-        raise http_ex
     except Exception as e:
-        raise HTTPException(
-            status_code=500, 
-            detail=f"Fallo crítico en el procesamiento del Hub de Pilotos: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Error al compilar la parrilla actual: {str(e)}")

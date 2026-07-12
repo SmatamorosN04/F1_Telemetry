@@ -19,23 +19,26 @@ async def fetch_single_page(client: httpx.AsyncClient, page: int, page_size: int
         if response.status_code == 200:
             data = response.json()
             return data.get("items", [])
-        print(f"⚠️ Error en página {page}: status {response.status_code}")
+        print(f" Error en página {page}: status {response.status_code}")
         return []
     except Exception as e:
-        print(f"❌ Error de conexión en página {page}: {e}")
+        print(f" Error de conexión en página {page}: {e}")
         return []
     
 async def fetch_hyprace_drivers_bulk(total_drivers: int = 100) -> Dict[str, Any]:
+   
     page_size = 25
     total_pages = max(1, total_drivers // page_size)
+    unified_items = []
 
     async with httpx.AsyncClient() as client:
-        tasks = [fetch_single_page(client, page, page_size) for page in range(1, total_pages + 1)]
-        pages_results = await asyncio.gather(*tasks)
-
-        unified_items = []
-        for items in pages_results:
-            unified_items.extend(items)
+        for page in range(1, total_pages + 1):
+            items = await fetch_single_page(client, page, page_size)
+            if items:
+                unified_items.extend(items)
+            
+            if page < total_pages:
+                await asyncio.sleep(0.6)
         
         return {
             "items": unified_items,
